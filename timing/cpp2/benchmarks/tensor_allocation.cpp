@@ -112,4 +112,25 @@ static void BM_MakeVariableFromTensor(benchmark::State& state) {
 }
 BENCHMARK(BM_MakeVariableFromTensor);
 
+#define BENCHMARK_ALLOC(NAME, SIZE, DEVICE)                             \
+  static void BM_ATenCPUTensorAllocation##NAME(benchmark::State& state) { \
+    auto options = at::TensorOptions(DEVICE);                           \
+    for (auto _ : state) {                                              \
+      auto tmp = at::empty(SIZE, options);                              \
+      benchmark::DoNotOptimize(tmp);                                    \
+    }                                                                   \
+  }                                                                     \
+  BENCHMARK(BM_ATenCPUTensorAllocation##NAME);
+
+#define BENCHMARK_CPU_ALLOC(NAME, SIZE) BENCHMARK_ALLOC(NAME, SIZE, at::kCPU)
+
+BENCHMARK_CPU_ALLOC(Small1, {1})
+BENCHMARK_CPU_ALLOC(Small2, {9})
+
+BENCHMARK_CPU_ALLOC(Medium1, {32 * 32})
+BENCHMARK_CPU_ALLOC(Medium2, {63 * 64})
+
+BENCHMARK_CPU_ALLOC(Big1, {1024 * 1024})
+BENCHMARK_CPU_ALLOC(Big2, {1024 * 8196})
+
 BENCHMARK_MAIN();
